@@ -4,6 +4,8 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
 import android.os.Bundle;
+import android.speech.tts.TextToSpeech;
+import android.speech.tts.UtteranceProgressListener;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
@@ -29,6 +31,8 @@ import com.google.android.gms.ads.nativead.MediaView;
 import com.google.android.gms.ads.nativead.NativeAd;
 import com.google.android.gms.ads.nativead.NativeAdView;
 
+import java.util.Locale;
+
 public class MainActivity extends Activity {
 
     // ---- IDs reales de AdMob del usuario ----
@@ -40,6 +44,7 @@ public class MainActivity extends Activity {
 
     private WebView webView;
     private AdView bannerAdView;
+    private TextToSpeech textToSpeech;
 
     private InterstitialAd interstitialAd;
     private int clickCount = 0;
@@ -56,6 +61,30 @@ public class MainActivity extends Activity {
             // SDK listo; cargamos los formatos de anuncio
             loadInterstitial();
             loadNativeAd();
+        });
+
+        // ---- Voz nativa de Android (reemplaza al speechSynthesis del WebView) ----
+        textToSpeech = new TextToSpeech(this, status -> {
+            if (status == TextToSpeech.SUCCESS && textToSpeech != null) {
+                int resultado = textToSpeech.setLanguage(new Locale("es", "MX"));
+                if (resultado == TextToSpeech.LANG_MISSING_DATA || resultado == TextToSpeech.LANG_NOT_SUPPORTED) {
+                    textToSpeech.setLanguage(Locale.forLanguageTag("es"));
+                }
+            }
+        });
+        textToSpeech.setOnUtteranceProgressListener(new UtteranceProgressListener() {
+            @Override
+            public void onStart(String utteranceId) { }
+
+            @Override
+            public void onDone(String utteranceId) {
+                runOnUiThread(() -> webView.evaluateJavascript("window.__ttsOnDone && window.__ttsOnDone();", null));
+            }
+
+            @Override
+            public void onError(String utteranceId) {
+                runOnUiThread(() -> webView.evaluateJavascript("window.__ttsOnDone && window.__ttsOnDone();", null));
+            }
         });
 
         // ---- Banner ----
@@ -80,7 +109,7 @@ public class MainActivity extends Activity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
-                injectClickListeners();
+                injectPuente();
             }
         });
         webView.setWebChromeClient(new WebChromeClient());
@@ -89,13 +118,36 @@ public class MainActivity extends Activity {
     }
 
     /**
-     * Inyecta JS (sin tocar el archivo loteria.html) que avisa a Android
-     * cuando el usuario toca Siguiente / Reiniciar / Play-Pausa,
-     * y detecta específicamente cuándo el juego queda en PAUSA.
+     * Inyecta JS (sin tocar el archivo loteria.html) que:
+     * 1) Redirige las llamadas a speechSynthesis del juego hacia el
+     *    TextToSpeech nativo de Android (para que SÍ se escuche la voz).
+     * 2) Avisa a Android cuando el usuario toca Siguiente / Reiniciar / Play-Pausa,
+     *    y detecta específicamente cuándo el juego queda en PAUSA.
      */
-    private void injectClickListeners() {
+    private void injectPuente() {
         String js =
             "(function(){"
+            + "if (window.speechSynthesis) {"
+            + "  window.speechSynthesis.speak = function(utterance) {"
+            + "    window.__pendingUtterance = utterance;"
+            + "    if (window.AndroidBridge && AndroidBridge.speak) {"
+            + "      AndroidBridge.speak(utterance.text || '');"
+            + "    }"
+            + "  };"
+            + "  window.speechSynthesis.cancel = function() {"
+            + "    if (window.AndroidBridge && AndroidBridge.stopSpeaking) { AndroidBridge.stopSpeaking(); }"
+            + "  };"
+            + "  window.speechSynthesis.getVoices = function() { return []; };"
+            + "}"
+            + "window.SpeechSynthesisUtterance = function(text) {"
+            + "  this.text = text; this.lang = ''; this.rate = 1; this.pitch = 1;"
+            + "  this.voice = null; this.onend = null; this.onerror = null;"
+            + "};"
+            + "window.__ttsOnDone = function() {"
+            + "  if (window.__pendingUtterance && typeof window.__pendingUtterance.onend === 'function') {"
+            + "    window.__pendingUtterance.onend();"
+            + "  }"
+            + "};"
             + "function bind(id){"
             + "  var el=document.getElementById(id);"
             + "  if(!el) return;"
@@ -249,6 +301,24 @@ public class MainActivity extends Activity {
                 showNativeAdDialog();
             });
         }
+
+        @JavascriptInterface
+        public void speak(String texto) {
+            runOnUiThread(() -> {
+                if (textToSpeech != null && texto != null && !texto.isEmpty()) {
+                    textToSpeech.speak(texto, TextToSpeech.QUEUE_FLUSH, null, "loteria_tts");
+                }
+            });
+        }
+
+        @JavascriptInterface
+        public void stopSpeaking() {
+            runOnUiThread(() -> {
+                if (textToSpeech != null) {
+                    textToSpeech.stop();
+                }
+            });
+        }
     }
 
     @Override
@@ -263,6 +333,10 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         if (bannerAdView != null) bannerAdView.destroy();
+        if (textToSpeech != null) {
+            textToSpeech.stop();
+            textToSpeech.shutdown();
+        }
         super.onDestroy();
     }
 }

@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Lotería Mexicana</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  body {
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: linear-gradient(180deg, #7dd3fc 0%, #eff6ff 100%);
+    font-family: 'Segoe UI', Arial, sans-serif;
+    padding: 8px 12px 10px;
+  }
+
+  h1 {
+    flex-shrink: 0;
+    margin: 2px 0 6px;
+    font-size: clamp(1.1rem, 5vw, 1.6rem);
+    font-weight: 800;
+    color: #b91c1c;
+    text-shadow: 1px 1px 0 #fff;
+    text-align: center;
+  }
+
+  .velocidad-box {
+    flex-shrink: 0;
+    width: 100%;
+    max-width: 420px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.7);
+    border-radius: 14px;
+    padding: 6px 12px;
+    margin-bottom: 6px;
+    font-size: 0.82rem;
+    color: #374151;
+  }
+  .velocidad-box svg { flex-shrink: 0; color: #4b5563; }
+  .velocidad-box input[type=range] { flex: 1; accent-color: #dc2626; }
+
+  #btnAudio {
+    flex-shrink: 0;
+    width: 100%;
+    max-width: 420px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: linear-gradient(180deg, #fbbf24, #d97706);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.82rem;
+    padding: 7px 12px;
+    border: none;
+    border-radius: 999px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.25);
+    margin-bottom: 6px;
+    cursor: pointer;
+  }
+  #btnAudio.audio-on {
+    background: linear-gradient(180deg, #34d399, #059669);
+  }
+  #velocidadValor { font-weight: 700; width: 28px; text-align: right; }
+
+  .carta-container {
+    flex: 1 1 auto;
+    min-height: 0;
+    width: 100%;
+    max-width: 280px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.28);
+    border: 5px solid #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .carta-container img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 10px;
+  }
+  @keyframes cardIn {
+    from { opacity: 0; transform: scale(0.82); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+  .carta-anim { animation: cardIn 0.35s ease; }
+
+  .carta-volando {
+    position: fixed;
+    z-index: 9999;
+    pointer-events: none;
+    border-radius: 10px;
+    object-fit: contain;
+    transform-origin: top left;
+    transition: transform 0.6s cubic-bezier(.4,0,.2,1), opacity 0.6s ease;
+  }
+  .estado-final {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 10px;
+  }
+  .estado-final img { max-height: 65%; }
+  .estado-final span {
+    color: #b91c1c;
+    font-weight: 800;
+    font-size: 1rem;
+    text-align: center;
+  }
+
+  .controles {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    margin-bottom: 8px;
+  }
+  .btn-circle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    color: #fff;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.28);
+  }
+  #btnReiniciar {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #34d399, #059669);
+  }
+  #btnPlayPause {
+    width: 62px;
+    height: 62px;
+    background: linear-gradient(135deg, #f43f5e, #b91c1c);
+  }
+  .btn-circle svg { pointer-events: none; }
+  .hidden { display: none !important; }
+
+  .barra-track {
+    flex-shrink: 0;
+    width: 100%;
+    max-width: 420px;
+    height: 6px;
+    background: rgba(255,255,255,0.6);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 8px;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.15);
+  }
+  #barraProgreso {
+    height: 100%;
+    width: 0%;
+    background: #2563eb;
+    transition: width 0.3s ease;
+  }
+
+  #btnSiguiente {
+    flex-shrink: 0;
+    width: 100%;
+    max-width: 420px;
+    background: linear-gradient(180deg, #38bdf8, #1d4ed8);
+    color: #fff;
+    font-weight: 800;
+    font-size: clamp(0.95rem, 4vw, 1.15rem);
+    padding: 10px 0;
+    border: none;
+    border-radius: 999px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.28);
+    margin-bottom: 6px;
+    cursor: pointer;
+  }
+  #btnSiguiente:active { filter: brightness(0.95); }
+
+  #historial {
+    flex-shrink: 0;
+    width: 100%;
+    max-width: 420px;
+    background: rgba(255,255,255,0.88);
+    border-radius: 14px;
+    padding: 8px 10px 6px;
+  }
+  #historial h3 {
+    margin: 0 0 6px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #374151;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  #listaCartas {
+    display: flex;
+    flex-direction: row;
+    gap: 6px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 2px;
+  }
+  .mini-carta {
+    flex-shrink: 0;
+    width: 42px;
+    height: 62px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    scroll-snap-align: start;
+    background: #fff;
+    transition: opacity 0.25s ease;
+  }
+  .mini-carta img { width: 100%; height: 100%; object-fit: cover; }
+
+  #historial hr {
+    border: none;
+    border-top: 1px solid #d1d5db;
+    margin: 6px 0 4px;
+  }
+  .patrocinado {
+    text-align: center;
+    font-size: 0.62rem;
+    font-weight: 800;
+    color: #6b7280;
+    margin: 0;
+  }
+</style>
+</head>
+<body>
+
+  <h1>Lotería Mexicana</h1>
+
+  <!-- Control de velocidad -->
+  <div class="velocidad-box">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="10" y1="2" x2="14" y2="2"/><line x1="12" y1="14" x2="15" y2="11"/><circle cx="12" cy="14" r="8"/></svg>
+    <label for="velocidad">Velocidad:</label>
+    <input type="range" id="velocidad" min="2" max="15" value="5">
+    <span id="velocidadValor">5s</span>
+  </div>
+
+  <!-- Control de voz (oculto, TTS activado por defecto) -->
+  <input type="checkbox" id="usarTTS" checked class="hidden">
+
+  <!-- Carta principal -->
+  <div id="cartaContainer" class="carta-container"></div>
+
+  <!-- Controles -->
+  <div class="controles">
+    <button id="btnReiniciar" class="btn-circle" title="Mezclar baraja">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 14 4 4-4 4"/><path d="m18 2 4 4-4 4"/><path d="M2 18h1.973a4 4 0 0 0 3.3-1.7l5.454-8.6a4 4 0 0 1 3.3-1.7H22"/><path d="M2 6h1.972a4 4 0 0 1 3.6 2.2"/><path d="M22 18h-6.041a4 4 0 0 1-3.3-1.8l-.359-.45"/></svg>
+    </button>
+    <button id="btnPlayPause" class="btn-circle" title="Reproducir / Pausar">
+      <svg id="iconPlay" width="28" height="28" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+      <svg id="iconPause" class="hidden" width="28" height="28" viewBox="0 0 24 24" fill="currentColor" stroke="none"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
+    </button>
+  </div>
+
+  <!-- Barra de progreso -->
+  <div class="barra-track">
+    <div id="barraProgreso"></div>
+  </div>
+
+  <!-- Botón Siguiente (avance manual) -->
+  <button id="btnSiguiente">Siguiente</button>
+
+  <!-- Historial -->
+  <div id="historial">
+    <h3>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><path d="M4 6h1v4"/><path d="M4 10h2"/><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>
+      Cartas salidas:
+    </h3>
+    <div id="listaCartas"></div>
+    <hr>
+    <p class="patrocinado">Patrocinado</p>
+  </div>
+
+  <audio id="audioCantor"></audio>
+
+<script>
+/* ==========================================================
+   1) TU BARAJA
+   ========================================================== */
+const BASE_IMG = "https://raw.githubusercontent.com/djmarquito/loteria/main/images/";
+
+const cartas = [
+  { nombre: "El Gallo", img: BASE_IMG + "el%20gallo.webp", audio: "" },
+  { nombre: "El Diablito", img: BASE_IMG + "el%20diablito.webp", audio: "" },
+  { nombre: "La Dama", img: BASE_IMG + "la%20dama.webp", audio: "" },
+  { nombre: "El Catrín", img: BASE_IMG + "el%20catr%C3%ADn.webp", audio: "" },
+  { nombre: "El Paraguas", img: BASE_IMG + "el%20paraguas.webp", audio: "" },
+  { nombre: "La Sirena", img: BASE_IMG + "la%20sirena.webp", audio: "" },
+  { nombre: "La Escalera", img: BASE_IMG + "la%20escalera.webp", audio: "" },
+  { nombre: "La Botella", img: BASE_IMG + "la%20botella.webp", audio: "" },
+  { nombre: "El Barril", img: BASE_IMG + "el%20barr%C3%ADl.webp", audio: "" },
+  { nombre: "El Árbol", img: BASE_IMG + "el%20%C3%A1rbol.webp", audio: "" },
+  { nombre: "El Melón", img: BASE_IMG + "el%20mel%C3%B3n.webp", audio: "" },
+  { nombre: "El Valiente", img: BASE_IMG + "el%20valiente.webp", audio: "" },
+  { nombre: "El Gorrito", img: BASE_IMG + "el%20gorrito.webp", audio: "" },
+  { nombre: "La Muerte", img: BASE_IMG + "la%20muerte.webp", audio: "" },
+  { nombre: "La Pera", img: BASE_IMG + "la%20pera.webp", audio: "" },
+  { nombre: "La Bandera", img: BASE_IMG + "la%20bandera.webp", audio: "" },
+  { nombre: "El Bandolón", img: BASE_IMG + "el%20bandol%C3%B3n.webp", audio: "" },
+  { nombre: "El Violoncello", img: BASE_IMG + "el%20violoncello.webp", audio: "" },
+  { nombre: "La Garza", img: BASE_IMG + "la%20garza.webp", audio: "" },
+  { nombre: "El Pájaro", img: BASE_IMG + "el%20pajarito.webp", audio: "" },
+  { nombre: "La Mano", img: BASE_IMG + "la%20mano.webp", audio: "" },
+  { nombre: "La Bota", img: BASE_IMG + "la%20bota.webp", audio: "" },
+  { nombre: "La Luna", img: BASE_IMG + "la%20luna.webp", audio: "" },
+  { nombre: "El Cotorro", img: BASE_IMG + "el%20cotorro.webp", audio: "" },
+  { nombre: "El Borracho", img: BASE_IMG + "el%20borracho.webp", audio: "" },
+  { nombre: "El Negrito", img: BASE_IMG + "el%20negrito.webp", audio: "" },
+  { nombre: "El Corazón", img: BASE_IMG + "el%20coraz%C3%B3n.webp", audio: "" },
+  { nombre: "La Sandía", img: BASE_IMG + "la%20sand%C3%ADa.webp", audio: "" },
+  { nombre: "El Tambor", img: BASE_IMG + "el%20tambor.webp", audio: "" },
+  { nombre: "El Camarón", img: BASE_IMG + "el%20camar%C3%B3n.webp", audio: "" },
+  { nombre: "Las Jaras", img: BASE_IMG + "las%20jaras.webp", audio: "" },
+  { nombre: "El Músico", img: BASE_IMG + "el%20m%C3%BAsico.webp", audio: "" },
+  { nombre: "La Araña", img: BASE_IMG + "la%20ara%C3%B1a.webp", audio: "" },
+  { nombre: "El Soldado", img: BASE_IMG + "el%20soldado.webp", audio: "" },
+  { nombre: "La Estrella", img: BASE_IMG + "la%20estrella.webp", audio: "" },
+  { nombre: "El Cazo", img: BASE_IMG + "el%20cazo.webp", audio: "" },
+  { nombre: "El Mundo", img: BASE_IMG + "el%20mundo.webp", audio: "" },
+  { nombre: "El Apache", img: BASE_IMG + "el%20apache.webp", audio: "" },
+  { nombre: "El Nopal", img: BASE_IMG + "el%20nopal.webp", audio: "" },
+  { nombre: "El Alacrán", img: BASE_IMG + "el%20alacr%C3%A1n.webp", audio: "" },
+  { nombre: "La Rosa", img: BASE_IMG + "la%20rosa.webp", audio: "" },
+  { nombre: "La Calavera", img: BASE_IMG + "la%20calavera.webp", audio: "" },
+  { nombre: "La Campana", img: BASE_IMG + "la%20campana.webp", audio: "" },
+  { nombre: "El Cantarito", img: BASE_IMG + "el%20cantarito.webp", audio: "" },
+  { nombre: "El Venado", img: BASE_IMG + "el%20venado.webp", audio: "" },
+  { nombre: "El Sol", img: BASE_IMG + "el%20sol.webp", audio: "" },
+  { nombre: "La Corona", img: BASE_IMG + "la%20corona.webp", audio: "" },
+  { nombre: "La Chalupa", img: BASE_IMG + "la%20chalupa.webp", audio: "" },
+  { nombre: "El Pino", img: BASE_IMG + "el%20pino.webp", audio: "" },
+  { nombre: "El Pescado", img: BASE_IMG + "el%20pescado.webp", audio: "" },
+  { nombre: "La Palma", img: BASE_IMG + "la%20palma.webp", audio: "" },
+  { nombre: "La Maceta", img: BASE_IMG + "la%20maceta.webp", audio: "" },
+  { nombre: "El Arpa", img: BASE_IMG + "el%20arpa.webp", audio: "" },
+  { nombre: "La Rana", img: BASE_IMG + "la%20rana.webp", audio: "" }
+];
+
+/* ==========================================================
+   2) Barajado real y aleatorio (Fisher-Yates)
+   ========================================================== */
+function barajar(array) {
+  const copia = array.slice();
+  for (let i = copia.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copia[i], copia[j]] = [copia[j], copia[i]];
+  }
+  return copia;
+}
+
+let mazo = [];
+let indiceActual = 0;
+let intervalo = null;
+let corriendo = false;
+
+const cartaContainer = document.getElementById('cartaContainer');
+const listaCartas = document.getElementById('listaCartas');
+const audioCantor = document.getElementById('audioCantor');
+const velocidadInput = document.getElementById('velocidad');
+const velocidadValor = document.getElementById('velocidadValor');
+const usarTTS = document.getElementById('usarTTS');
+const barraProgreso = document.getElementById('barraProgreso');
+const iconPlay = document.getElementById('iconPlay');
+const iconPause = document.getElementById('iconPause');
+const IMAGEN_PORTADA = "https://i.pinimg.com/736x/8c/73/ac/8c73ac26b943f44b45093e50ab7e941c.jpg";
+
+function actualizarIconoPlayPause() {
+  if (corriendo) {
+    iconPlay.classList.add('hidden');
+    iconPause.classList.remove('hidden');
+  } else {
+    iconPlay.classList.remove('hidden');
+    iconPause.classList.add('hidden');
+  }
+}
+
+/* ==========================================================
+   El audio (TTS) se activa automáticamente la primera vez que
+   el usuario presiona Play. Ese toque es el gesto real que
+   autoriza al navegador/WebView a reproducir voz.
+   ========================================================== */
+let audioActivado = false;
+
+/* ==========================================================
+   Texto a voz (Web Speech API) - se usa cuando no hay audio URL
+   Se protege con try/catch por si el navegador embebido no lo soporta.
+   Muchos WebView (como el de appcreator24) exigen que la primera
+   locución ocurra dentro de un toque real del usuario; por eso la
+   primera llamada a hablarTexto() debe hacerse siempre dentro del
+   propio manejador de clic (nunca en un setTimeout/setInterval).
+   ========================================================== */
+const TTS_DISPONIBLE = (typeof window !== 'undefined') && ('speechSynthesis' in window);
+let vozEspanol = null;
+
+function cargarVoces() {
+  if (!TTS_DISPONIBLE) return;
+  try {
+    const voces = speechSynthesis.getVoices();
+    vozEspanol = voces.find(v => v.lang === 'es-MX')
+              || voces.find(v => v.lang && v.lang.startsWith('es'))
+              || null;
+  } catch (e) { /* TTS no disponible en este entorno */ }
+}
+
+if (TTS_DISPONIBLE) {
+  try {
+    cargarVoces();
+    speechSynthesis.onvoiceschanged = cargarVoces;
+  } catch (e) { /* ignorar */ }
+}
+
+// Habla un texto y ejecuta "callback" cuando termina (o de inmediato si TTS no está disponible).
+function hablarTexto(texto, callback) {
+  const seguir = typeof callback === 'function' ? callback : function () {};
+  if (!TTS_DISPONIBLE) { seguir(); return; }
+  try {
+    speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(texto);
+    utterance.lang = 'es-MX';
+    if (vozEspanol) utterance.voice = vozEspanol;
+    utterance.rate = 0.95;
+    utterance.pitch = 1;
+
+    let yaContinuo = false;
+    const continuar = () => {
+      if (yaContinuo) return;
+      yaContinuo = true;
+      seguir();
+    };
+    utterance.onend = continuar;
+    utterance.onerror = continuar;
+    speechSynthesis.speak(utterance);
+
+    // Respaldo por si el evento "end" nunca llega en este WebView.
+    setTimeout(continuar, 2500);
+  } catch (e) {
+    seguir();
+  }
+}
+
+function hablarNombre(nombre) {
+  hablarTexto(nombre, null);
+}
+
+function esUrlValida(url) {
+  return !!url && !url.startsWith('URL_AUDIO_');
+}
+
+velocidadInput.addEventListener('input', () => {
+  velocidadValor.textContent = velocidadInput.value + 's';
+  if (corriendo) {
+    pausar();
+    iniciar();
+  }
+});
+
+function iniciarBaraja() {
+  mazo = barajar(cartas);
+  indiceActual = 0;
+  listaCartas.innerHTML = '';
+  cartaContainer.innerHTML = `<img src="${IMAGEN_PORTADA}" alt="Lotería Mexicana">`;
+  actualizarProgreso();
+}
+
+function actualizarProgreso() {
+  const porcentaje = mazo.length ? Math.round((indiceActual / mazo.length) * 100) : 0;
+  barraProgreso.style.width = porcentaje + '%';
+}
+
+function animarVueloACarrusel(imgSrc, miniElement) {
+  try {
+    const cartaRect = cartaContainer.getBoundingClientRect();
+    const miniRect = miniElement.getBoundingClientRect();
+
+    const clon = document.createElement('img');
+    clon.src = imgSrc;
+    clon.className = 'carta-volando';
+    clon.style.left = cartaRect.left + 'px';
+    clon.style.top = cartaRect.top + 'px';
+    clon.style.width = cartaRect.width + 'px';
+    clon.style.height = cartaRect.height + 'px';
+    document.body.appendChild(clon);
+
+    requestAnimationFrame(() => {
+      const escalaX = miniRect.width / cartaRect.width;
+      const escalaY = miniRect.height / cartaRect.height;
+      const trasladoX = miniRect.left - cartaRect.left;
+      const trasladoY = miniRect.top - cartaRect.top;
+      clon.style.transform = `translate(${trasladoX}px, ${trasladoY}px) scale(${escalaX}, ${escalaY})`;
+      clon.style.opacity = '0.25';
+    });
+
+    setTimeout(() => {
+      clon.remove();
+      miniElement.style.opacity = '1';
+    }, 620);
+  } catch (e) {
+    // Si algo falla con la animación, al menos mostramos la miniatura sin efecto.
+    miniElement.style.opacity = '1';
+  }
+}
+
+function mostrarSiguienteCarta() {
+  if (indiceActual >= mazo.length) {
+    pausar();
+    cartaContainer.innerHTML = `
+      <div class="estado-final">
+        <img src="${IMAGEN_PORTADA}" alt="Lotería Mexicana">
+        <span>¡Se terminó la baraja!</span>
+      </div>`;
+    return;
+  }
+  const carta = mazo[indiceActual];
+  indiceActual++;
+
+  cartaContainer.innerHTML = `<img src="${carta.img}" alt="${carta.nombre}" onerror="this.style.display='none'">`;
+  cartaContainer.classList.remove('carta-anim');
+  void cartaContainer.offsetWidth; // fuerza reflow para reiniciar la animación
+  cartaContainer.classList.add('carta-anim');
+
+  if (esUrlValida(carta.audio)) {
+    audioCantor.src = carta.audio;
+    audioCantor.play().catch(() => {});
+  } else if (usarTTS.checked && audioActivado) {
+    hablarNombre(carta.nombre);
+  }
+
+  const mini = document.createElement('div');
+  mini.className = 'mini-carta';
+  mini.style.opacity = '0';
+  mini.innerHTML = `<img src="${carta.img}" alt="">`;
+  listaCartas.insertBefore(mini, listaCartas.firstChild);
+  listaCartas.scrollTo({ left: 0, behavior: 'smooth' });
+
+  animarVueloACarrusel(carta.img, mini);
+
+  actualizarProgreso();
+}
+
+const FRASE_INICIO_PARTIDA = "¡Corre y se va con...!";
+
+function iniciar() {
+  if (mazo.length === 0) iniciarBaraja();
+  if (corriendo) return;
+  corriendo = true;
+  actualizarIconoPlayPause();
+
+  const comenzarSorteo = () => {
+    mostrarSiguienteCarta();
+    const segundos = parseInt(velocidadInput.value, 10);
+    intervalo = setInterval(mostrarSiguienteCarta, segundos * 1000);
+  };
+
+  // Solo se anuncia la frase de inicio cuando arranca una partida nueva
+  // (es decir, cuando todavía no se ha mostrado ninguna carta de este mazo)
+  // y solo si el usuario ya activó el audio con el botón correspondiente.
+  if (indiceActual === 0 && usarTTS.checked && audioActivado) {
+    hablarTexto(FRASE_INICIO_PARTIDA, comenzarSorteo);
+  } else {
+    comenzarSorteo();
+  }
+}
+
+function pausar() {
+  corriendo = false;
+  clearInterval(intervalo);
+  actualizarIconoPlayPause();
+}
+
+function alternarPlayPause() {
+  // Al presionar Play, este mismo toque activa el audio si aún no lo estaba.
+  if (!audioActivado) {
+    audioActivado = true;
+  }
+  if (corriendo) {
+    pausar();
+  } else {
+    iniciar();
+  }
+}
+
+function avanzarManual() {
+  if (mazo.length === 0) iniciarBaraja();
+  if (corriendo) pausar();
+  mostrarSiguienteCarta();
+}
+
+function reiniciar() {
+  pausar();
+  iniciarBaraja();
+}
+
+document.getElementById('btnPlayPause').addEventListener('click', alternarPlayPause);
+document.getElementById('btnSiguiente').addEventListener('click', avanzarManual);
+document.getElementById('btnReiniciar').addEventListener('click', reiniciar);
+
+// Preparar la baraja al cargar la página
+iniciarBaraja();
+</script>
+
+</body>
+</html>

@@ -256,9 +256,6 @@
     <span id="velocidadValor">5s</span>
   </div>
 
-  <!-- Control de voz (oculto, TTS activado por defecto) -->
-  <input type="checkbox" id="usarTTS" checked class="hidden">
-
   <!-- Carta principal -->
   <div id="cartaContainer" class="carta-container"></div>
 
@@ -299,62 +296,63 @@
    1) TU BARAJA
    ========================================================== */
 const BASE_IMG = "https://raw.githubusercontent.com/djmarquito/loteria/main/images/";
+const BASE_AUDIO = "https://ia601407.us.archive.org/22/items/el-paraguas_202607/";
 
 const cartas = [
-  { nombre: "El Gallo", img: BASE_IMG + "el%20gallo.webp", audio: "" },
-  { nombre: "El Diablito", img: BASE_IMG + "el%20diablito.webp", audio: "" },
-  { nombre: "La Dama", img: BASE_IMG + "la%20dama.webp", audio: "" },
-  { nombre: "El Catrín", img: BASE_IMG + "el%20catr%C3%ADn.webp", audio: "" },
-  { nombre: "El Paraguas", img: BASE_IMG + "el%20paraguas.webp", audio: "" },
-  { nombre: "La Sirena", img: BASE_IMG + "la%20sirena.webp", audio: "" },
-  { nombre: "La Escalera", img: BASE_IMG + "la%20escalera.webp", audio: "" },
-  { nombre: "La Botella", img: BASE_IMG + "la%20botella.webp", audio: "" },
-  { nombre: "El Barril", img: BASE_IMG + "el%20barr%C3%ADl.webp", audio: "" },
-  { nombre: "El Árbol", img: BASE_IMG + "el%20%C3%A1rbol.webp", audio: "" },
-  { nombre: "El Melón", img: BASE_IMG + "el%20mel%C3%B3n.webp", audio: "" },
-  { nombre: "El Valiente", img: BASE_IMG + "el%20valiente.webp", audio: "" },
-  { nombre: "El Gorrito", img: BASE_IMG + "el%20gorrito.webp", audio: "" },
-  { nombre: "La Muerte", img: BASE_IMG + "la%20muerte.webp", audio: "" },
-  { nombre: "La Pera", img: BASE_IMG + "la%20pera.webp", audio: "" },
-  { nombre: "La Bandera", img: BASE_IMG + "la%20bandera.webp", audio: "" },
-  { nombre: "El Bandolón", img: BASE_IMG + "el%20bandol%C3%B3n.webp", audio: "" },
-  { nombre: "El Violoncello", img: BASE_IMG + "el%20violoncello.webp", audio: "" },
-  { nombre: "La Garza", img: BASE_IMG + "la%20garza.webp", audio: "" },
-  { nombre: "El Pájaro", img: BASE_IMG + "el%20pajarito.webp", audio: "" },
-  { nombre: "La Mano", img: BASE_IMG + "la%20mano.webp", audio: "" },
-  { nombre: "La Bota", img: BASE_IMG + "la%20bota.webp", audio: "" },
-  { nombre: "La Luna", img: BASE_IMG + "la%20luna.webp", audio: "" },
-  { nombre: "El Cotorro", img: BASE_IMG + "el%20cotorro.webp", audio: "" },
-  { nombre: "El Borracho", img: BASE_IMG + "el%20borracho.webp", audio: "" },
-  { nombre: "El Negrito", img: BASE_IMG + "el%20negrito.webp", audio: "" },
-  { nombre: "El Corazón", img: BASE_IMG + "el%20coraz%C3%B3n.webp", audio: "" },
-  { nombre: "La Sandía", img: BASE_IMG + "la%20sand%C3%ADa.webp", audio: "" },
-  { nombre: "El Tambor", img: BASE_IMG + "el%20tambor.webp", audio: "" },
-  { nombre: "El Camarón", img: BASE_IMG + "el%20camar%C3%B3n.webp", audio: "" },
-  { nombre: "Las Jaras", img: BASE_IMG + "las%20jaras.webp", audio: "" },
-  { nombre: "El Músico", img: BASE_IMG + "el%20m%C3%BAsico.webp", audio: "" },
-  { nombre: "La Araña", img: BASE_IMG + "la%20ara%C3%B1a.webp", audio: "" },
-  { nombre: "El Soldado", img: BASE_IMG + "el%20soldado.webp", audio: "" },
-  { nombre: "La Estrella", img: BASE_IMG + "la%20estrella.webp", audio: "" },
-  { nombre: "El Cazo", img: BASE_IMG + "el%20cazo.webp", audio: "" },
-  { nombre: "El Mundo", img: BASE_IMG + "el%20mundo.webp", audio: "" },
-  { nombre: "El Apache", img: BASE_IMG + "el%20apache.webp", audio: "" },
-  { nombre: "El Nopal", img: BASE_IMG + "el%20nopal.webp", audio: "" },
-  { nombre: "El Alacrán", img: BASE_IMG + "el%20alacr%C3%A1n.webp", audio: "" },
-  { nombre: "La Rosa", img: BASE_IMG + "la%20rosa.webp", audio: "" },
-  { nombre: "La Calavera", img: BASE_IMG + "la%20calavera.webp", audio: "" },
-  { nombre: "La Campana", img: BASE_IMG + "la%20campana.webp", audio: "" },
-  { nombre: "El Cantarito", img: BASE_IMG + "el%20cantarito.webp", audio: "" },
-  { nombre: "El Venado", img: BASE_IMG + "el%20venado.webp", audio: "" },
-  { nombre: "El Sol", img: BASE_IMG + "el%20sol.webp", audio: "" },
-  { nombre: "La Corona", img: BASE_IMG + "la%20corona.webp", audio: "" },
-  { nombre: "La Chalupa", img: BASE_IMG + "la%20chalupa.webp", audio: "" },
-  { nombre: "El Pino", img: BASE_IMG + "el%20pino.webp", audio: "" },
-  { nombre: "El Pescado", img: BASE_IMG + "el%20pescado.webp", audio: "" },
-  { nombre: "La Palma", img: BASE_IMG + "la%20palma.webp", audio: "" },
-  { nombre: "La Maceta", img: BASE_IMG + "la%20maceta.webp", audio: "" },
-  { nombre: "El Arpa", img: BASE_IMG + "el%20arpa.webp", audio: "" },
-  { nombre: "La Rana", img: BASE_IMG + "la%20rana.webp", audio: "" }
+  { nombre: "El Gallo", img: BASE_IMG + "el%20gallo.webp", audio: BASE_AUDIO + "El%20Gallo.mp3" },
+  { nombre: "El Diablito", img: BASE_IMG + "el%20diablito.webp", audio: BASE_AUDIO + "El%20Diablito.mp3" },
+  { nombre: "La Dama", img: BASE_IMG + "la%20dama.webp", audio: BASE_AUDIO + "la%20dama.mp3" },
+  { nombre: "El Catrín", img: BASE_IMG + "el%20catr%C3%ADn.webp", audio: BASE_AUDIO + "El%20Catrin.mp3" },
+  { nombre: "El Paraguas", img: BASE_IMG + "el%20paraguas.webp", audio: BASE_AUDIO + "El%20Parag%C3%BCas.mp3" },
+  { nombre: "La Sirena", img: BASE_IMG + "la%20sirena.webp", audio: BASE_AUDIO + "La%20sirena.mp3" },
+  { nombre: "La Escalera", img: BASE_IMG + "la%20escalera.webp", audio: BASE_AUDIO + "La%20escalera.mp3" },
+  { nombre: "La Botella", img: BASE_IMG + "la%20botella.webp", audio: BASE_AUDIO + "La%20botella.mp3" },
+  { nombre: "El Barril", img: BASE_IMG + "el%20barr%C3%ADl.webp", audio: BASE_AUDIO + "El%20Barril.mp3" },
+  { nombre: "El Árbol", img: BASE_IMG + "el%20%C3%A1rbol.webp", audio: BASE_AUDIO + "El%20%C3%A1rbol.mp3" },
+  { nombre: "El Melón", img: BASE_IMG + "el%20mel%C3%B3n.webp", audio: BASE_AUDIO + "El%20melon.mp3" },
+  { nombre: "El Valiente", img: BASE_IMG + "el%20valiente.webp", audio: BASE_AUDIO + "El%20Valiente.mp3" },
+  { nombre: "El Gorrito", img: BASE_IMG + "el%20gorrito.webp", audio: BASE_AUDIO + "El%20Gorrito.mp3" },
+  { nombre: "La Muerte", img: BASE_IMG + "la%20muerte.webp", audio: BASE_AUDIO + "la%20muerte.mp3" },
+  { nombre: "La Pera", img: BASE_IMG + "la%20pera.webp", audio: BASE_AUDIO + "la%20pera.mp3" },
+  { nombre: "La Bandera", img: BASE_IMG + "la%20bandera.webp", audio: BASE_AUDIO + "La%20bandera.mp3" },
+  { nombre: "El Bandolón", img: BASE_IMG + "el%20bandol%C3%B3n.webp", audio: BASE_AUDIO + "El%20Bandolon.mp3" },
+  { nombre: "El Violoncello", img: BASE_IMG + "el%20violoncello.webp", audio: BASE_AUDIO + "El%20Violoncello.mp3" },
+  { nombre: "La Garza", img: BASE_IMG + "la%20garza.webp", audio: BASE_AUDIO + "La%20garza.mp3" },
+  { nombre: "El Pájaro", img: BASE_IMG + "el%20pajarito.webp", audio: BASE_AUDIO + "El%20Pajarito.mp3" },
+  { nombre: "La Mano", img: BASE_IMG + "la%20mano.webp", audio: BASE_AUDIO + "la%20mano.mp3" },
+  { nombre: "La Bota", img: BASE_IMG + "la%20bota.webp", audio: BASE_AUDIO + "La%20bota.mp3" },
+  { nombre: "La Luna", img: BASE_IMG + "la%20luna.webp", audio: BASE_AUDIO + "La%20luna.mp3" },
+  { nombre: "El Cotorro", img: BASE_IMG + "el%20cotorro.webp", audio: BASE_AUDIO + "El%20cotorro.mp3" },
+  { nombre: "El Borracho", img: BASE_IMG + "el%20borracho.webp", audio: BASE_AUDIO + "El%20Borracho.mp3" },
+  { nombre: "El Negrito", img: BASE_IMG + "el%20negrito.webp", audio: BASE_AUDIO + "El%20Negrito.mp3" },
+  { nombre: "El Corazón", img: BASE_IMG + "el%20coraz%C3%B3n.webp", audio: BASE_AUDIO + "el%20coraz%C3%B3n.mp3" },
+  { nombre: "La Sandía", img: BASE_IMG + "la%20sand%C3%ADa.webp", audio: BASE_AUDIO + "La%20sandia.mp3" },
+  { nombre: "El Tambor", img: BASE_IMG + "el%20tambor.webp", audio: BASE_AUDIO + "El%20Tambor.mp3" },
+  { nombre: "El Camarón", img: BASE_IMG + "el%20camar%C3%B3n.webp", audio: BASE_AUDIO + "El%20Camaron.mp3" },
+  { nombre: "Las Jaras", img: BASE_IMG + "las%20jaras.webp", audio: BASE_AUDIO + "Las%20jaras.mp3" },
+  { nombre: "El Músico", img: BASE_IMG + "el%20m%C3%BAsico.webp", audio: BASE_AUDIO + "El%20M%C3%BAsico.mp3" },
+  { nombre: "La Araña", img: BASE_IMG + "la%20ara%C3%B1a.webp", audio: BASE_AUDIO + "La%20ara%C3%B1a.mp3" },
+  { nombre: "El Soldado", img: BASE_IMG + "el%20soldado.webp", audio: BASE_AUDIO + "El%20Soldado.mp3" },
+  { nombre: "La Estrella", img: BASE_IMG + "la%20estrella.webp", audio: BASE_AUDIO + "la%20estrella.mp3" },
+  { nombre: "El Cazo", img: BASE_IMG + "el%20cazo.webp", audio: BASE_AUDIO + "el%20cazo.mp3" },
+  { nombre: "El Mundo", img: BASE_IMG + "el%20mundo.webp", audio: BASE_AUDIO + "El%20Mundo.mp3" },
+  { nombre: "El Apache", img: BASE_IMG + "el%20apache.webp", audio: BASE_AUDIO + "El%20apache.mp3" },
+  { nombre: "El Nopal", img: BASE_IMG + "el%20nopal.webp", audio: BASE_AUDIO + "El%20nopal.mp3" },
+  { nombre: "El Alacrán", img: BASE_IMG + "el%20alacr%C3%A1n.webp", audio: BASE_AUDIO + "El%20alacran.mp3" },
+  { nombre: "La Rosa", img: BASE_IMG + "la%20rosa.webp", audio: BASE_AUDIO + "La%20rosa.mp3" },
+  { nombre: "La Calavera", img: BASE_IMG + "la%20calavera.webp", audio: BASE_AUDIO + "La%20calavera.mp3" },
+  { nombre: "La Campana", img: BASE_IMG + "la%20campana.webp", audio: BASE_AUDIO + "La%20campana.mp3" },
+  { nombre: "El Cantarito", img: BASE_IMG + "el%20cantarito.webp", audio: BASE_AUDIO + "El%20Cantarito.mp3" },
+  { nombre: "El Venado", img: BASE_IMG + "el%20venado.webp", audio: BASE_AUDIO + "El%20Venado.mp3" },
+  { nombre: "El Sol", img: BASE_IMG + "el%20sol.webp", audio: BASE_AUDIO + "El%20Sol.mp3" },
+  { nombre: "La Corona", img: BASE_IMG + "la%20corona.webp", audio: BASE_AUDIO + "La%20corona.mp3" },
+  { nombre: "La Chalupa", img: BASE_IMG + "la%20chalupa.webp", audio: BASE_AUDIO + "La%20chalupa.mp3" },
+  { nombre: "El Pino", img: BASE_IMG + "el%20pino.webp", audio: BASE_AUDIO + "El%20Pino.mp3" },
+  { nombre: "El Pescado", img: BASE_IMG + "el%20pescado.webp", audio: BASE_AUDIO + "El%20Pescado.mp3" },
+  { nombre: "La Palma", img: BASE_IMG + "la%20palma.webp", audio: BASE_AUDIO + "La%20palma.mp3" },
+  { nombre: "La Maceta", img: BASE_IMG + "la%20maceta.webp", audio: BASE_AUDIO + "la%20maceta.mp3" },
+  { nombre: "El Arpa", img: BASE_IMG + "el%20arpa.webp", audio: BASE_AUDIO + "El%20Arpa.mp3" },
+  { nombre: "La Rana", img: BASE_IMG + "la%20rana.webp", audio: BASE_AUDIO + "la%20rana.mp3" }
 ];
 
 /* ==========================================================
@@ -379,7 +377,6 @@ const listaCartas = document.getElementById('listaCartas');
 const audioCantor = document.getElementById('audioCantor');
 const velocidadInput = document.getElementById('velocidad');
 const velocidadValor = document.getElementById('velocidadValor');
-const usarTTS = document.getElementById('usarTTS');
 const barraProgreso = document.getElementById('barraProgreso');
 const iconPlay = document.getElementById('iconPlay');
 const iconPause = document.getElementById('iconPause');
@@ -395,76 +392,41 @@ function actualizarIconoPlayPause() {
   }
 }
 
-/* ==========================================================
-   El audio (TTS) se activa automáticamente la primera vez que
-   el usuario presiona Play. Ese toque es el gesto real que
-   autoriza al navegador/WebView a reproducir voz.
-   ========================================================== */
-let audioActivado = false;
-
-/* ==========================================================
-   Texto a voz (Web Speech API) - se usa cuando no hay audio URL
-   Se protege con try/catch por si el navegador embebido no lo soporta.
-   Muchos WebView (como el de appcreator24) exigen que la primera
-   locución ocurra dentro de un toque real del usuario; por eso la
-   primera llamada a hablarTexto() debe hacerse siempre dentro del
-   propio manejador de clic (nunca en un setTimeout/setInterval).
-   ========================================================== */
-const TTS_DISPONIBLE = (typeof window !== 'undefined') && ('speechSynthesis' in window);
-let vozEspanol = null;
-
-function cargarVoces() {
-  if (!TTS_DISPONIBLE) return;
-  try {
-    const voces = speechSynthesis.getVoices();
-    vozEspanol = voces.find(v => v.lang === 'es-MX')
-              || voces.find(v => v.lang && v.lang.startsWith('es'))
-              || null;
-  } catch (e) { /* TTS no disponible en este entorno */ }
+function esUrlValida(url) {
+  return !!url && !url.startsWith('URL_AUDIO_');
 }
 
-if (TTS_DISPONIBLE) {
-  try {
-    cargarVoces();
-    speechSynthesis.onvoiceschanged = cargarVoces;
-  } catch (e) { /* ignorar */ }
-}
-
-// Habla un texto y ejecuta "callback" cuando termina (o de inmediato si TTS no está disponible).
-function hablarTexto(texto, callback) {
+// Reproduce un audio MP3 y ejecuta "callback" cuando termina
+// (o de inmediato si la URL no es válida / falla la carga).
+function reproducirAudio(url, callback) {
   const seguir = typeof callback === 'function' ? callback : function () {};
-  if (!TTS_DISPONIBLE) { seguir(); return; }
+  if (!esUrlValida(url)) { seguir(); return; }
   try {
-    speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(texto);
-    utterance.lang = 'es-MX';
-    if (vozEspanol) utterance.voice = vozEspanol;
-    utterance.rate = 0.95;
-    utterance.pitch = 1;
+    audioCantor.pause();
+    audioCantor.currentTime = 0;
+    audioCantor.src = url;
 
     let yaContinuo = false;
     const continuar = () => {
       if (yaContinuo) return;
       yaContinuo = true;
+      audioCantor.removeEventListener('ended', continuar);
+      audioCantor.removeEventListener('error', continuar);
       seguir();
     };
-    utterance.onend = continuar;
-    utterance.onerror = continuar;
-    speechSynthesis.speak(utterance);
+    audioCantor.addEventListener('ended', continuar);
+    audioCantor.addEventListener('error', continuar);
 
-    // Respaldo por si el evento "end" nunca llega en este WebView.
-    setTimeout(continuar, 2500);
+    const resultado = audioCantor.play();
+    if (resultado && typeof resultado.catch === 'function') {
+      resultado.catch(continuar);
+    }
+
+    // Respaldo por si el evento "ended" nunca llega en este WebView.
+    setTimeout(continuar, 4000);
   } catch (e) {
     seguir();
   }
-}
-
-function hablarNombre(nombre) {
-  hablarTexto(nombre, null);
-}
-
-function esUrlValida(url) {
-  return !!url && !url.startsWith('URL_AUDIO_');
 }
 
 velocidadInput.addEventListener('input', () => {
@@ -542,8 +504,6 @@ function mostrarSiguienteCarta() {
   if (esUrlValida(carta.audio)) {
     audioCantor.src = carta.audio;
     audioCantor.play().catch(() => {});
-  } else if (usarTTS.checked && audioActivado) {
-    hablarNombre(carta.nombre);
   }
 
   const mini = document.createElement('div');
@@ -558,7 +518,7 @@ function mostrarSiguienteCarta() {
   actualizarProgreso();
 }
 
-const FRASE_INICIO_PARTIDA = "¡Corre y se va con...!";
+const AUDIO_INICIO_PARTIDA = "https://ia600901.us.archive.org/30/items/el-alacran/corre.mp3";
 
 function iniciar() {
   if (mazo.length === 0) iniciarBaraja();
@@ -572,11 +532,10 @@ function iniciar() {
     intervalo = setInterval(mostrarSiguienteCarta, segundos * 1000);
   };
 
-  // Solo se anuncia la frase de inicio cuando arranca una partida nueva
-  // (es decir, cuando todavía no se ha mostrado ninguna carta de este mazo)
-  // y solo si el usuario ya activó el audio con el botón correspondiente.
-  if (indiceActual === 0 && usarTTS.checked && audioActivado) {
-    hablarTexto(FRASE_INICIO_PARTIDA, comenzarSorteo);
+  // Solo se reproduce el audio de inicio cuando arranca una partida nueva
+  // (es decir, cuando todavía no se ha mostrado ninguna carta de este mazo).
+  if (indiceActual === 0) {
+    reproducirAudio(AUDIO_INICIO_PARTIDA, comenzarSorteo);
   } else {
     comenzarSorteo();
   }
@@ -589,10 +548,6 @@ function pausar() {
 }
 
 function alternarPlayPause() {
-  // Al presionar Play, este mismo toque activa el audio si aún no lo estaba.
-  if (!audioActivado) {
-    audioActivado = true;
-  }
   if (corriendo) {
     pausar();
   } else {

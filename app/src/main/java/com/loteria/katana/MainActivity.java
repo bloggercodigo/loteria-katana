@@ -18,6 +18,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdLoader;
 import com.google.android.gms.ads.AdRequest;
@@ -25,6 +26,7 @@ import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.FullScreenContentCallback;
 import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.appopen.AppOpenAd;
 import com.google.android.gms.ads.interstitial.InterstitialAd;
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
 import com.google.android.gms.ads.nativead.MediaView;
@@ -37,8 +39,9 @@ public class MainActivity extends Activity {
 
     // ---- IDs reales de AdMob del usuario ----
     private static final String BANNER_AD_UNIT_ID = "ca-app-pub-4168853691867413/6873130724";
-    private static final String INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-4168853691867413/6465936613";
-    private static final String NATIVE_AD_UNIT_ID = "ca-app-pub-4168853691867413/2526691609";
+    private static final String APP_OPEN_AD_UNIT_ID = "ca-app-pub-4168853691867413/5766902342";
+    private static final String INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-4168853691867413/1925794489";
+    private static final String NATIVE_AD_UNIT_ID = "ca-app-pub-4168853691867413/4663638461";
 
     private static final int CLICKS_PER_INTERSTITIAL = 5;
 
@@ -51,6 +54,9 @@ public class MainActivity extends Activity {
 
     private NativeAd currentNativeAd;
 
+    private AppOpenAd appOpenAd;
+    private boolean isShowingAppOpenAd = false;
+
     @SuppressLint("SetJavaScriptEnabled")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,9 +64,10 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         MobileAds.initialize(this, initializationStatus -> {
-            // SDK listo; cargamos los formatos de anuncio
+            // SDK listo; cargamos todos los formatos de anuncio
             loadInterstitial();
             loadNativeAd();
+            loadAppOpenAd();
         });
 
         // ---- Voz nativa de Android (reemplaza al speechSynthesis del WebView) ----
@@ -173,6 +180,48 @@ public class MainActivity extends Activity {
         webView.evaluateJavascript(js, null);
     }
 
+    // ---------------- Apertura de app ----------------
+
+    private void loadAppOpenAd() {
+        AppOpenAd.load(this, APP_OPEN_AD_UNIT_ID, new AdRequest.Builder().build(),
+            new AppOpenAd.AppOpenAdLoadCallback() {
+                @Override
+                public void onAdLoaded(AppOpenAd ad) {
+                    appOpenAd = ad;
+                    mostrarAppOpenAdSiDisponible();
+                }
+
+                @Override
+                public void onAdFailedToLoad(LoadAdError loadAdError) {
+                    appOpenAd = null;
+                }
+            });
+    }
+
+    private void mostrarAppOpenAdSiDisponible() {
+        if (isShowingAppOpenAd || appOpenAd == null) return;
+
+        appOpenAd.setFullScreenContentCallback(new FullScreenContentCallback() {
+            @Override
+            public void onAdDismissedFullScreenContent() {
+                appOpenAd = null;
+                isShowingAppOpenAd = false;
+            }
+
+            @Override
+            public void onAdFailedToShowFullScreenContent(AdError adError) {
+                appOpenAd = null;
+                isShowingAppOpenAd = false;
+            }
+
+            @Override
+            public void onAdShowedFullScreenContent() {
+                isShowingAppOpenAd = true;
+            }
+        });
+        appOpenAd.show(this);
+    }
+
     // ---------------- Intersticial ----------------
 
     private void loadInterstitial() {
@@ -189,7 +238,7 @@ public class MainActivity extends Activity {
                         }
 
                         @Override
-                        public void onAdFailedToShowFullScreenContent(com.google.android.gms.ads.AdError adError) {
+                        public void onAdFailedToShowFullScreenContent(AdError adError) {
                             interstitialAd = null;
                             loadInterstitial();
                         }

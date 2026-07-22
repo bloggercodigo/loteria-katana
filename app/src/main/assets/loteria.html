@@ -229,19 +229,6 @@
     transition: opacity 0.25s ease;
   }
   .mini-carta img { width: 100%; height: 100%; object-fit: cover; }
-
-  #historial hr {
-    border: none;
-    border-top: 1px solid #d1d5db;
-    margin: 6px 0 4px;
-  }
-  .patrocinado {
-    text-align: center;
-    font-size: 0.62rem;
-    font-weight: 800;
-    color: #6b7280;
-    margin: 0;
-  }
 </style>
 </head>
 <body>
@@ -255,9 +242,6 @@
     <input type="range" id="velocidad" min="2" max="15" value="5">
     <span id="velocidadValor">5s</span>
   </div>
-
-  <!-- Control de voz (oculto, TTS activado por defecto) -->
-  <input type="checkbox" id="usarTTS" checked class="hidden">
 
   <!-- Carta principal -->
   <div id="cartaContainer" class="carta-container"></div>
@@ -288,8 +272,6 @@
       Cartas salidas:
     </h3>
     <div id="listaCartas"></div>
-    <hr>
-    <p class="patrocinado">Patrocinado</p>
   </div>
 
   <audio id="audioCantor"></audio>
@@ -380,7 +362,6 @@ const listaCartas = document.getElementById('listaCartas');
 const audioCantor = document.getElementById('audioCantor');
 const velocidadInput = document.getElementById('velocidad');
 const velocidadValor = document.getElementById('velocidadValor');
-const usarTTS = document.getElementById('usarTTS');
 const barraProgreso = document.getElementById('barraProgreso');
 const iconPlay = document.getElementById('iconPlay');
 const iconPause = document.getElementById('iconPause');
@@ -394,59 +375,6 @@ function actualizarIconoPlayPause() {
     iconPlay.classList.remove('hidden');
     iconPause.classList.add('hidden');
   }
-}
-
-let audioActivado = false;
-
-const TTS_DISPONIBLE = (typeof window !== 'undefined') && ('speechSynthesis' in window);
-let vozEspanol = null;
-
-function cargarVoces() {
-  if (!TTS_DISPONIBLE) return;
-  try {
-    const voces = speechSynthesis.getVoices();
-    vozEspanol = voces.find(v => v.lang === 'es-MX')
-              || voces.find(v => v.lang && v.lang.startsWith('es'))
-              || null;
-  } catch (e) { /* TTS no disponible en este entorno */ }
-}
-
-if (TTS_DISPONIBLE) {
-  try {
-    cargarVoces();
-    speechSynthesis.onvoiceschanged = cargarVoces;
-  } catch (e) { /* ignorar */ }
-}
-
-function hablarTexto(texto, callback) {
-  const seguir = typeof callback === 'function' ? callback : function () {};
-  if (!TTS_DISPONIBLE) { seguir(); return; }
-  try {
-    speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(texto);
-    utterance.lang = 'es-MX';
-    if (vozEspanol) utterance.voice = vozEspanol;
-    utterance.rate = 0.95;
-    utterance.pitch = 1;
-
-    let yaContinuo = false;
-    const continuar = () => {
-      if (yaContinuo) return;
-      yaContinuo = true;
-      seguir();
-    };
-    utterance.onend = continuar;
-    utterance.onerror = continuar;
-    speechSynthesis.speak(utterance);
-
-    setTimeout(continuar, 2500);
-  } catch (e) {
-    seguir();
-  }
-}
-
-function hablarNombre(nombre) {
-  hablarTexto(nombre, null);
 }
 
 function esUrlValida(url) {
@@ -479,6 +407,7 @@ function reproducirAudio(url, callback) {
       resultado.catch(continuar);
     }
 
+    // Respaldo por si el evento "ended" nunca llega en este WebView.
     setTimeout(continuar, 4000);
   } catch (e) {
     seguir();
@@ -534,6 +463,7 @@ function animarVueloACarrusel(imgSrc, miniElement) {
       miniElement.style.opacity = '1';
     }, 620);
   } catch (e) {
+    // Si algo falla con la animación, al menos mostramos la miniatura sin efecto.
     miniElement.style.opacity = '1';
   }
 }
@@ -553,14 +483,12 @@ function mostrarSiguienteCarta() {
 
   cartaContainer.innerHTML = `<img src="${carta.img}" alt="${carta.nombre}" onerror="this.style.display='none'">`;
   cartaContainer.classList.remove('carta-anim');
-  void cartaContainer.offsetWidth;
+  void cartaContainer.offsetWidth; // fuerza reflow para reiniciar la animación
   cartaContainer.classList.add('carta-anim');
 
   if (esUrlValida(carta.audio)) {
     audioCantor.src = carta.audio;
     audioCantor.play().catch(() => {});
-  } else if (usarTTS.checked && audioActivado) {
-    hablarNombre(carta.nombre);
   }
 
   const mini = document.createElement('div');
@@ -589,6 +517,8 @@ function iniciar() {
     intervalo = setInterval(mostrarSiguienteCarta, segundos * 1000);
   };
 
+  // Solo se reproduce el audio de inicio cuando arranca una partida nueva
+  // (es decir, cuando todavía no se ha mostrado ninguna carta de este mazo).
   if (indiceActual === 0) {
     reproducirAudio(AUDIO_INICIO_PARTIDA, comenzarSorteo);
   } else {
@@ -603,9 +533,6 @@ function pausar() {
 }
 
 function alternarPlayPause() {
-  if (!audioActivado) {
-    audioActivado = true;
-  }
   if (corriendo) {
     pausar();
   } else {
@@ -628,6 +555,7 @@ document.getElementById('btnPlayPause').addEventListener('click', alternarPlayPa
 document.getElementById('btnSiguiente').addEventListener('click', avanzarManual);
 document.getElementById('btnReiniciar').addEventListener('click', reiniciar);
 
+// Preparar la baraja al cargar la página
 iniciarBaraja();
 </script>
 

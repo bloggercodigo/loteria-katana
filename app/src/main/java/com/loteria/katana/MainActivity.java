@@ -38,11 +38,11 @@ import java.util.Locale;
 
 public class MainActivity extends Activity {
 
-    // ---- IDs reales de AdMob del usuario ----
-    private static final String BANNER_AD_UNIT_ID = "ca-app-pub-4168853691867413/6873130724";
-    private static final String APP_OPEN_AD_UNIT_ID = "ca-app-pub-4168853691867413/5766902342";
-    private static final String INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-4168853691867413/1925794489";
-    private static final String NATIVE_AD_UNIT_ID = "ca-app-pub-4168853691867413/4663638461";
+    // ---- IDs DE PRUEBA oficiales de Google (temporal, para diagnóstico) ----
+    private static final String BANNER_AD_UNIT_ID = "ca-app-pub-3940256099942544/6300978111";
+    private static final String APP_OPEN_AD_UNIT_ID = "ca-app-pub-3940256099942544/9257395921";
+    private static final String INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-3940256099942544/1033173712";
+    private static final String NATIVE_AD_UNIT_ID = "ca-app-pub-3940256099942544/2247696110";
 
     private static final int CLICKS_PER_INTERSTITIAL = 5;
 

@@ -17,19 +17,20 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Barra de progreso horizontal animada, centrada en el recuadro verde de la imagen -->
+    <!-- Barra de progreso: fondo dorado, relleno amarillo, animada por código -->
     <ProgressBar
         android:id="@+id/splashProgress"
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="0dp"
-        android:layout_height="10dp"
-        android:indeterminate="true"
-        android:indeterminateTint="#FFD700"
+        android:layout_height="12dp"
+        android:max="100"
+        android:progress="0"
+        android:progressDrawable="@drawable/progress_bar_custom"
         app:layout_constraintWidth_percent="0.58"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintVertical_bias="0.862" />
+        app:layout_constraintVertical_bias="0.905" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

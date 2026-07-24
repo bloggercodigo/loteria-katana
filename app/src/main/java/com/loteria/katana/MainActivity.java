@@ -17,7 +17,6 @@ import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdListener;
@@ -97,17 +96,6 @@ public class MainActivity extends Activity {
 
         // ---- Banner ----
         bannerAdView = findViewById(R.id.adView);
-        bannerAdView.setAdListener(new AdListener() {
-            @Override
-            public void onAdLoaded() {
-                Toast.makeText(MainActivity.this, "Banner: cargado OK", Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onAdFailedToLoad(LoadAdError adError) {
-                Toast.makeText(MainActivity.this, "Banner ERROR: " + adError.getCode() + " - " + adError.getMessage(), Toast.LENGTH_LONG).show();
-            }
-        });
         bannerAdView.loadAd(new AdRequest.Builder().build());
 
         // ---- WebView con el juego ----
@@ -200,14 +188,12 @@ public class MainActivity extends Activity {
                 @Override
                 public void onAdLoaded(AppOpenAd ad) {
                     appOpenAd = ad;
-                    Toast.makeText(MainActivity.this, "App Open: cargado OK", Toast.LENGTH_SHORT).show();
                     mostrarAppOpenAdSiDisponible();
                 }
 
                 @Override
                 public void onAdFailedToLoad(LoadAdError loadAdError) {
                     appOpenAd = null;
-                    Toast.makeText(MainActivity.this, "App Open ERROR: " + loadAdError.getCode() + " - " + loadAdError.getMessage(), Toast.LENGTH_LONG).show();
                 }
             });
     }
@@ -244,7 +230,6 @@ public class MainActivity extends Activity {
                 @Override
                 public void onAdLoaded(InterstitialAd ad) {
                     interstitialAd = ad;
-                    Toast.makeText(MainActivity.this, "Intersticial: cargado OK", Toast.LENGTH_SHORT).show();
                     interstitialAd.setFullScreenContentCallback(new FullScreenContentCallback() {
                         @Override
                         public void onAdDismissedFullScreenContent() {
@@ -263,7 +248,6 @@ public class MainActivity extends Activity {
                 @Override
                 public void onAdFailedToLoad(LoadAdError loadAdError) {
                     interstitialAd = null;
-                    Toast.makeText(MainActivity.this, "Intersticial ERROR: " + loadAdError.getCode() + " - " + loadAdError.getMessage(), Toast.LENGTH_LONG).show();
                 }
             });
     }
@@ -282,15 +266,11 @@ public class MainActivity extends Activity {
 
     private void loadNativeAd() {
         AdLoader adLoader = new AdLoader.Builder(this, NATIVE_AD_UNIT_ID)
-            .forNativeAd(nativeAd -> {
-                currentNativeAd = nativeAd;
-                Toast.makeText(MainActivity.this, "Nativo: cargado OK", Toast.LENGTH_SHORT).show();
-            })
+            .forNativeAd(nativeAd -> currentNativeAd = nativeAd)
             .withAdListener(new AdListener() {
                 @Override
                 public void onAdFailedToLoad(LoadAdError adError) {
                     currentNativeAd = null;
-                    Toast.makeText(MainActivity.this, "Nativo ERROR: " + adError.getCode() + " - " + adError.getMessage(), Toast.LENGTH_LONG).show();
                 }
             })
             .build();

@@ -1,11 +1,11 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace 'com.loteria.katana'
+    namespace 'com.loterias.katana'
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.loteria.katana"
+        applicationId "com.loterias.katana"
         minSdk 21
         targetSdk 34
         versionCode 1

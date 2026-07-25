@@ -187,13 +187,21 @@ public class MainActivity extends Activity {
 
     // ---------------- Apertura de app ----------------
 
+    private boolean appOpenPendienteDeMostrar = true;
+
     private void loadAppOpenAd() {
         AppOpenAd.load(this, APP_OPEN_AD_UNIT_ID, new AdRequest.Builder().build(),
             new AppOpenAd.AppOpenAdLoadCallback() {
                 @Override
                 public void onAdLoaded(AppOpenAd ad) {
                     appOpenAd = ad;
-                    mostrarAppOpenAdSiDisponible();
+                    // Solo se muestra automáticamente la PRIMERA vez que carga
+                    // (al abrir la app). Las próximas cargas quedan en reserva
+                    // sin mostrarse solas, evitando el ciclo infinito.
+                    if (appOpenPendienteDeMostrar) {
+                        appOpenPendienteDeMostrar = false;
+                        mostrarAppOpenAdSiDisponible();
+                    }
                 }
 
                 @Override
@@ -211,14 +219,15 @@ public class MainActivity extends Activity {
             public void onAdDismissedFullScreenContent() {
                 appOpenAd = null;
                 isShowingAppOpenAd = false;
-                loadAppOpenAd();
+                // IMPORTANTE: aquí NO se vuelve a llamar loadAppOpenAd().
+                // Si se recarga, onAdLoaded() lo mostraría de nuevo y
+                // se repetiría el ciclo. Ya cumplió su única función.
             }
 
             @Override
             public void onAdFailedToShowFullScreenContent(AdError adError) {
                 appOpenAd = null;
                 isShowingAppOpenAd = false;
-                loadAppOpenAd();
             }
 
             @Override
@@ -360,7 +369,11 @@ public class MainActivity extends Activity {
 
         @JavascriptInterface
         public void onReshuffle() {
-            runOnUiThread(MainActivity.this::mostrarAppOpenAdSiDisponible);
+            runOnUiThread(() -> {
+                if (interstitialAd != null) {
+                    interstitialAd.show(MainActivity.this);
+                }
+            });
         }
 
         @JavascriptInterface

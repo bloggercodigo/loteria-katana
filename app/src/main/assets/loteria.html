@@ -229,6 +229,19 @@
     transition: opacity 0.25s ease;
   }
   .mini-carta img { width: 100%; height: 100%; object-fit: cover; }
+
+  #historial hr {
+    border: none;
+    border-top: 1px solid #d1d5db;
+    margin: 6px 0 4px;
+  }
+  .patrocinado {
+    text-align: center;
+    font-size: 0.62rem;
+    font-weight: 800;
+    color: #6b7280;
+    margin: 0;
+  }
 </style>
 </head>
 <body>
@@ -339,6 +352,28 @@ const cartas = [
   { nombre: "El Arpa", img: BASE_IMG + "el%20arpa.webp", audio: BASE_AUDIO + "El%20Arpa.mp3" },
   { nombre: "La Rana", img: BASE_IMG + "la%20rana.webp", audio: BASE_AUDIO + "la%20rana.mp3" }
 ];
+
+/* ==========================================================
+   1.5) Precarga en segundo plano de TODAS las imágenes y audios.
+   Así, cuando cada carta le toque salir, ya está descargada en
+   la caché del WebView y aparece de inmediato (sin esperar red).
+   No bloquea el juego: arranca sola apenas carga la página.
+   ========================================================== */
+function precargarTodo() {
+  cartas.forEach(carta => {
+    const img = new Image();
+    img.src = carta.img;
+    if (carta.audio) {
+      const audio = new Audio();
+      audio.preload = 'auto';
+      audio.src = carta.audio;
+    }
+  });
+  const audioInicio = new Audio();
+  audioInicio.preload = 'auto';
+  audioInicio.src = "https://ia600901.us.archive.org/30/items/el-alacran/corre.mp3";
+}
+precargarTodo();
 
 /* ==========================================================
    2) Barajado real y aleatorio (Fisher-Yates)

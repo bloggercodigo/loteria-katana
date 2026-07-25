@@ -71,6 +71,14 @@ public class SplashActivity extends Activity {
         }
         appOpenAd.setFullScreenContentCallback(new FullScreenContentCallback() {
             @Override
+            public void onAdShowedFullScreenContent() {
+                // El anuncio ya se está mostrando de verdad: cancelamos el
+                // respaldo de tiempo para que el usuario pueda tomarse el
+                // tiempo que necesite y lo cierre él mismo (tocando "Continuar").
+                handler.removeCallbacksAndMessages(null);
+            }
+
+            @Override
             public void onAdDismissedFullScreenContent() {
                 continuarAlJuego();
             }

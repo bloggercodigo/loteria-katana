@@ -168,6 +168,11 @@ public class MainActivity extends Activity {
             + "          else { AndroidBridge.onAction(); }"
             + "        }"
             + "      }, 30);"
+            + "    } else if(id==='btnReiniciar'){"
+            + "      if(window.AndroidBridge){"
+            + "        AndroidBridge.onAction();"
+            + "        AndroidBridge.onReshuffle();"
+            + "      }"
             + "    } else if(window.AndroidBridge){"
             + "      AndroidBridge.onAction();"
             + "    }"
@@ -206,12 +211,14 @@ public class MainActivity extends Activity {
             public void onAdDismissedFullScreenContent() {
                 appOpenAd = null;
                 isShowingAppOpenAd = false;
+                loadAppOpenAd();
             }
 
             @Override
             public void onAdFailedToShowFullScreenContent(AdError adError) {
                 appOpenAd = null;
                 isShowingAppOpenAd = false;
+                loadAppOpenAd();
             }
 
             @Override
@@ -349,6 +356,11 @@ public class MainActivity extends Activity {
                 registerClickForInterstitial();
                 showNativeAdDialog();
             });
+        }
+
+        @JavascriptInterface
+        public void onReshuffle() {
+            runOnUiThread(MainActivity.this::mostrarAppOpenAdSiDisponible);
         }
 
         @JavascriptInterface

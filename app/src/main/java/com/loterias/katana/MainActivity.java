@@ -26,7 +26,6 @@ import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.FullScreenContentCallback;
 import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
-import com.google.android.gms.ads.appopen.AppOpenAd;
 import com.google.android.gms.ads.interstitial.InterstitialAd;
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
 import com.google.android.gms.ads.nativead.MediaView;
@@ -39,7 +38,6 @@ public class MainActivity extends Activity {
 
     // ---- IDs reales de AdMob del usuario ----
     private static final String BANNER_AD_UNIT_ID = "ca-app-pub-4168853691867413/7313088194";
-    private static final String APP_OPEN_AD_UNIT_ID = "ca-app-pub-4168853691867413/9747679843";
     private static final String INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-4168853691867413/9711754897";
     private static final String NATIVE_AD_UNIT_ID = "ca-app-pub-4168853691867413/9375998966";
 
@@ -54,9 +52,6 @@ public class MainActivity extends Activity {
 
     private NativeAd currentNativeAd;
 
-    private AppOpenAd appOpenAd;
-    private boolean isShowingAppOpenAd = false;
-
     @SuppressLint("SetJavaScriptEnabled")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,7 +62,6 @@ public class MainActivity extends Activity {
             // SDK listo; cargamos todos los formatos de anuncio
             loadInterstitial();
             loadNativeAd();
-            loadAppOpenAd();
         });
 
         // ---- Voz nativa de Android (reemplaza al speechSynthesis del WebView) ----
@@ -183,59 +177,6 @@ public class MainActivity extends Activity {
             + "bind('btnPlayPause');"
             + "})();";
         webView.evaluateJavascript(js, null);
-    }
-
-    // ---------------- Apertura de app ----------------
-
-    private boolean appOpenPendienteDeMostrar = true;
-
-    private void loadAppOpenAd() {
-        AppOpenAd.load(this, APP_OPEN_AD_UNIT_ID, new AdRequest.Builder().build(),
-            new AppOpenAd.AppOpenAdLoadCallback() {
-                @Override
-                public void onAdLoaded(AppOpenAd ad) {
-                    appOpenAd = ad;
-                    // Solo se muestra automáticamente la PRIMERA vez que carga
-                    // (al abrir la app). Las próximas cargas quedan en reserva
-                    // sin mostrarse solas, evitando el ciclo infinito.
-                    if (appOpenPendienteDeMostrar) {
-                        appOpenPendienteDeMostrar = false;
-                        mostrarAppOpenAdSiDisponible();
-                    }
-                }
-
-                @Override
-                public void onAdFailedToLoad(LoadAdError loadAdError) {
-                    appOpenAd = null;
-                }
-            });
-    }
-
-    private void mostrarAppOpenAdSiDisponible() {
-        if (isShowingAppOpenAd || appOpenAd == null) return;
-
-        appOpenAd.setFullScreenContentCallback(new FullScreenContentCallback() {
-            @Override
-            public void onAdDismissedFullScreenContent() {
-                appOpenAd = null;
-                isShowingAppOpenAd = false;
-                // IMPORTANTE: aquí NO se vuelve a llamar loadAppOpenAd().
-                // Si se recarga, onAdLoaded() lo mostraría de nuevo y
-                // se repetiría el ciclo. Ya cumplió su única función.
-            }
-
-            @Override
-            public void onAdFailedToShowFullScreenContent(AdError adError) {
-                appOpenAd = null;
-                isShowingAppOpenAd = false;
-            }
-
-            @Override
-            public void onAdShowedFullScreenContent() {
-                isShowingAppOpenAd = true;
-            }
-        });
-        appOpenAd.show(this);
     }
 
     // ---------------- Intersticial ----------------
